@@ -1,95 +1,97 @@
-package com.mycompany.mavenproject;
+package pravat12.a;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlValue;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+
 import lombok.Data;
 
-public class XmlToJavaToXml {
+public class AbcV1 {
 
-    public static void main(String args[]) throws JsonProcessingException, IOException, JAXBException {
+	public static void main(String args[]) throws  IOException, JAXBException {
 
-        Path fileName = Path.of("C:\\Users\\prava\\OneDrive\\Desktop\\library-document.xml");
-        String fileContent = Files.readString(fileName);
+        String filePath="C:\\Users\\prava\\OneDrive\\Desktop\\library-document.xml";
+		JAXBContext jaxbContext = JAXBContext.newInstance(Gsafeed.class);
 
-        XmlMapper xmlMapper = new XmlMapper();
-        xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
+		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 
-        Gsafeed value = xmlMapper.readValue(fileContent, Gsafeed.class);
+		File file = new File(filePath);
+		Gsafeed value = (Gsafeed) jaxbUnmarshaller.unmarshal(file);
 
-             
+		Marshaller marshaller = JAXBContext.newInstance(Gsafeed.class).createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-        xmlMapper.writeValue(new File("C:\\Users\\prava\\OneDrive\\Desktop\\library-document_1.xml"), value);
+		StringWriter stringWriter = new StringWriter();
 
-    }
+		marshaller.marshal(value, stringWriter);
+		System.out.println(stringWriter);
+
+	}
 }
 
 @Data
-@XmlAccessorType(XmlAccessType.FIELD)
-
+@XmlRootElement
 class Gsafeed {
+	
+	@Data
+	public static class Header {
 
-    public Header header;
-    public Group group;
-}
+		public String datasource;
+		public String feedtype;
+	}
 
-@Data
-class Header {
-    @XmlAttribute
+	public Header header;
+	public Group group;
 
-    public String datasource;
-    @XmlAttribute
+	@Data
 
-    public String feedtype;
-}
+	public static class Group {
 
-@Data
+		public List<Record> record;
 
-class Meta {
+		@Data
+		public static class Record {
 
-    public String name;
-    public String content;
-}
+			@XmlElement
+			public Metadata metadata;
 
-@Data
-class Metadata {
+			@XmlAttribute
+			public String url;
 
-    public List<Meta> meta;
-}
+			@XmlAttribute
+			public String mimetype;
 
-@Data
+			@XmlAttribute
+			public String action;
 
-class Record {
+			@Data
+			public static class Metadata {
 
-    public Metadata metadata;
+				@Data
+				public static class Meta {
+					@XmlAttribute
 
-    @XmlAttribute
-    public String url;
+					public String name;
 
-    @XmlAttribute
-    public String mimetype;
+					@XmlAttribute
+					public String content;
+				}
 
-        @XmlAttribute
+				public List<Meta> meta;
+			}
 
-    public String action;
-}
+		}
 
-@Data
+	}
 
-class Group {
-
-    public Record record;
 }
